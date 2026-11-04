@@ -1,8 +1,8 @@
 export default function manifest() {
   return {
-    name: 'Renata Moura | Brechó de Grife',
+    name: 'Renata Moura | Brechó Chique',
     short_name: 'Renata Moura',
-    description: 'Catálogo de peças femininas de grife. Reserve e finalize pelo WhatsApp.',
+    description: 'Catálogo de peças femininas. Reserve e finalize pelo WhatsApp.',
     start_url: '/',
     scope: '/',
     display: 'standalone',
