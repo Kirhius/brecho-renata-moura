@@ -17,6 +17,7 @@ import {
 import { chamar, MODO_DEMO } from '@/lib/client';
 import { CATEGORIAS } from '@/lib/constants';
 import { brl } from '@/lib/format';
+import { ehVideo, soImagens, soVideos, capaDe } from '@/lib/midia';
 import { montarMensagem, linkWhatsapp, compartilharFotos } from '@/lib/whatsapp';
 
 const CHAVE_SACOLA = 'rm_sacola';
@@ -61,9 +62,15 @@ function CartaoProduto({ p, naSacola, onAbrir, onAlternar }) {
   return (
     <article className={`produto ${indisponivel ? 'indisponivel' : ''}`}>
       <button className="produto-foto" onClick={() => onAbrir(p.id)} aria-label={`Ver ${p.nome}`}>
-        <Foto src={p.fotos && p.fotos[0]} alt={p.nome} />
+        <Foto src={capaDe(p.fotos)} alt={p.nome} />
         {indisponivel ? <span className="selo">Reservada</span> : null}
-        {p.fotos && p.fotos.length > 1 ? <span className="selo fotos">{p.fotos.length} fotos</span> : null}
+        {(() => {
+          const partes = [];
+          const n = soImagens(p.fotos).length;
+          if (n > 1) partes.push(`${n} fotos`);
+          if (soVideos(p.fotos).length > 0) partes.push('▶ vídeo');
+          return partes.length ? <span className="selo fotos">{partes.join(' · ')}</span> : null;
+        })()}
       </button>
       <div className="produto-info">
         {p.marca ? <div className="produto-marca">{p.marca}</div> : null}
@@ -142,7 +149,19 @@ function DetalheProduto({ p, naSacola, onFechar, onAlternar }) {
           >
             {fotos.map((f, i) => (
               <div key={i}>
-                <Foto src={f} alt={`${p.nome} - foto ${i + 1}`} />
+                {f && ehVideo(f) ? (
+                  <video
+                    src={f.includes('#') ? f : `${f}#t=0.1`}
+                    controls
+                    playsInline
+                    muted
+                    loop
+                    preload="metadata"
+                    aria-label={`${p.nome} - vídeo`}
+                  />
+                ) : (
+                  <Foto src={f} alt={`${p.nome} - foto ${i + 1}`} />
+                )}
               </div>
             ))}
           </div>
@@ -549,7 +568,7 @@ export default function Vitrine() {
           <>
             {itensSacola.map((p) => (
               <div key={p.id} className="item-sacola">
-                {p.fotos && p.fotos[0] ? <img src={p.fotos[0]} alt={p.nome} /> : <div className="mini" />}
+                {capaDe(p.fotos) ? <img src={capaDe(p.fotos)} alt={p.nome} /> : <div className="mini" />}
                 <div className="txt">
                   <div className="nome">{p.nome}</div>
                   <div className="det">

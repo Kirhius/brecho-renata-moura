@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Sheet, Campo } from '../ui';
 import { IconMais, IconEditar, IconCamera, IconFechar, IconCabide } from '../Icons';
-import { enviarFoto } from '@/lib/client';
+import { enviarFoto, enviarVideo } from '@/lib/client';
+import { ehVideo, soVideos, capaDe, MAX_MIDIAS, MAX_VIDEOS, MAX_SEGUNDOS_VIDEO } from '@/lib/midia';
 import { CATEGORIAS, TAMANHOS, STATUS_PRODUTO } from '@/lib/constants';
 import { brl } from '@/lib/format';
 
@@ -22,6 +23,7 @@ const VAZIO = {
 function FormProduto({ editando, onFechar, exec, senha, mostrar }) {
   const [f, setF] = useState(VAZIO);
   const [subindo, setSubindo] = useState(0);
+  const [videoPct, setVideoPct] = useState(null); // null | numero (preparando) | 'enviando'
   const [salvando, setSalvando] = useState(false);
   const aberto = Boolean(editando);
   const novo = editando === 'novo';
@@ -44,7 +46,7 @@ function FormProduto({ editando, onFechar, exec, senha, mostrar }) {
   async function aoEscolher(e) {
     const arquivos = [...e.target.files];
     e.target.value = '';
-    const livres = 8 - f.fotos.length;
+    const livres = MAX_MIDIAS - f.fotos.length;
     for (const arquivo of arquivos.slice(0, livres)) {
       setSubindo((s) => s + 1);
       try {
@@ -55,6 +57,23 @@ function FormProduto({ editando, onFechar, exec, senha, mostrar }) {
       } finally {
         setSubindo((s) => s - 1);
       }
+    }
+  }
+
+  async function aoEscolherVideo(e) {
+    const arquivo = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!arquivo) return;
+    if (soVideos(f.fotos).length >= MAX_VIDEOS) return mostrar(`Máximo de ${MAX_VIDEOS} vídeos por peça.`, 'erro');
+    setVideoPct(0);
+    try {
+      const url = await enviarVideo(arquivo, senha, setVideoPct);
+      setF((x) => ({ ...x, fotos: [...x.fotos, url] }));
+      mostrar('Vídeo adicionado!');
+    } catch (err) {
+      mostrar(err.message, 'erro');
+    } finally {
+      setVideoPct(null);
     }
   }
 
@@ -101,51 +120,93 @@ function FormProduto({ editando, onFechar, exec, senha, mostrar }) {
               Excluir
             </button>
           ) : null}
-          <button className="btn solido cheio" onClick={salvar} disabled={salvando || subindo > 0}>
-            {subindo > 0 ? 'Enviando fotos...' : salvando ? 'Salvando...' : 'Salvar peça'}
+          <button className="btn solido cheio" onClick={salvar} disabled={salvando || subindo > 0 || videoPct !== null}>
+            {subindo > 0 || videoPct !== null ? 'Aguarde o envio...' : salvando ? 'Salvando...' : 'Salvar peça'}
           </button>
         </div>
       }
     >
       <div className="campo">
-        <label>Fotos (até 8)</label>
+        <label>Fotos e vídeos (até {MAX_MIDIAS})</label>
       </div>
       <div className="fotos-edicao">
-        {f.fotos.map((src, i) => (
-          <div className="foto-slot" key={src.slice(-40) + i} onClick={() => tornarCapa(i)}>
-            <img src={src} alt={`Foto ${i + 1}`} />
-            {i === 0 ? <span className="capa">Capa</span> : null}
-            <button
-              type="button"
-              className="rm"
-              aria-label="Remover foto"
-              onClick={(e) => {
-                e.stopPropagation();
-                removerFoto(i);
-              }}
-            >
-              <IconFechar size={14} />
-            </button>
-          </div>
-        ))}
+        {f.fotos.map((src, i) =>
+          ehVideo(src) ? (
+            <div className="foto-slot" key={src.slice(-40) + i}>
+              <video src={`${src}#t=0.1`} muted playsInline preload="metadata" />
+              <span className="capa video">▶ Vídeo</span>
+              <button
+                type="button"
+                className="rm"
+                aria-label="Remover vídeo"
+                onClick={() => removerFoto(i)}
+              >
+                <IconFechar size={14} />
+              </button>
+            </div>
+          ) : (
+            <div className="foto-slot" key={src.slice(-40) + i} onClick={() => tornarCapa(i)}>
+              <img src={src} alt={`Foto ${i + 1}`} />
+              {src === capaDe(f.fotos) ? <span className="capa">Capa</span> : null}
+              <button
+                type="button"
+                className="rm"
+                aria-label="Remover foto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removerFoto(i);
+                }}
+              >
+                <IconFechar size={14} />
+              </button>
+            </div>
+          )
+        )}
         {Array.from({ length: subindo }).map((_, i) => (
           <div className="foto-slot" key={'s' + i}>
             <span style={{ fontSize: 11 }}>enviando...</span>
           </div>
         ))}
-        {f.fotos.length + subindo < 8 ? (
+        {videoPct !== null ? (
+          <div className="foto-slot">
+            <span style={{ fontSize: 11, textAlign: 'center', padding: 4 }}>
+              {videoPct === 'enviando' ? 'enviando vídeo...' : `preparando ${videoPct}%`}
+            </span>
+          </div>
+        ) : null}
+        {f.fotos.length + subindo + (videoPct !== null ? 1 : 0) < MAX_MIDIAS ? (
           <label className="foto-slot add">
             <input type="file" accept="image/*" multiple onChange={aoEscolher} />
             <span>
               <IconCamera size={24} />
               <br />
-              Adicionar
+              Foto
+            </span>
+          </label>
+        ) : null}
+        {f.fotos.length + subindo + (videoPct !== null ? 1 : 0) < MAX_MIDIAS &&
+        soVideos(f.fotos).length < MAX_VIDEOS &&
+        videoPct === null ? (
+          <label className="foto-slot add">
+            <input type="file" accept="video/*" onChange={aoEscolherVideo} />
+            <span>
+              <IconCamera size={24} />
+              <br />
+              Vídeo
             </span>
           </label>
         ) : null}
       </div>
+      {videoPct !== null ? (
+        <div className="aviso">
+          Preparando o vídeo para ficar leve. Mantenha esta tela aberta até terminar (leva quase o mesmo tempo da
+          duração do vídeo).
+        </div>
+      ) : null}
       <p className="mudo" style={{ marginTop: -6 }}>
-        Toque em uma foto para torná-la a capa. A foto é reduzida automaticamente para carregar rápido.
+        Toque em uma foto para torná-la a capa. Vídeos: até {MAX_SEGUNDOS_VIDEO} segundos, sem som, convertidos
+        automaticamente (funciona com vídeos do iPhone) e ficam leves para o site carregar rápido. Máx. {MAX_VIDEOS}{' '}
+        vídeos por peça.
       </p>
 
       <Campo rotulo="Nome da peça *">
@@ -282,8 +343,8 @@ export default function ProdutosTab({ dados, exec, senha, mostrar }) {
         <div className="lista">
           {lista.map((p) => (
             <div className="linha" key={p.id}>
-              {p.fotos && p.fotos[0] ? (
-                <img className="mini" src={p.fotos[0]} alt={p.nome} loading="lazy" />
+              {capaDe(p.fotos) ? (
+                <img className="mini" src={capaDe(p.fotos)} alt={p.nome} loading="lazy" />
               ) : (
                 <div className="mini" style={{ display: 'grid', placeItems: 'center', color: 'var(--rose)' }}>
                   <IconCabide size={26} />

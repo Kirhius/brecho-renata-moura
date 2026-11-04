@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { IconCheck } from '../Icons';
 import { STATUS_PEDIDO } from '@/lib/constants';
+import { capaDe } from '@/lib/midia';
 import { brl, dataHora, tempoAtras } from '@/lib/format';
 
 export function PedidosTab({ dados, exec }) {
@@ -69,7 +70,7 @@ export function PedidosTab({ dados, exec }) {
               <div className="pedido-itens">
                 {p.itens.map((i) => (
                   <div className="pedido-item" key={i.id}>
-                    {i.fotos && i.fotos[0] ? <img src={i.fotos[0]} alt={i.nome} loading="lazy" /> : <div className="mini" />}
+                    {capaDe(i.fotos) ? <img src={capaDe(i.fotos)} alt={i.nome} loading="lazy" /> : <div className="mini" />}
                     <div className="grow">
                       <div>{i.nome}</div>
                       <div className="mudo">
@@ -129,7 +130,7 @@ export function ReservasTab({ dados, exec }) {
             const ped = pedidoDe(p.id);
             return (
               <div className="linha" key={p.id}>
-                {p.fotos && p.fotos[0] ? <img className="mini" src={p.fotos[0]} alt={p.nome} loading="lazy" /> : <div className="mini" />}
+                {capaDe(p.fotos) ? <img className="mini" src={capaDe(p.fotos)} alt={p.nome} loading="lazy" /> : <div className="mini" />}
                 <div className="txt">
                   <div className="nome">{p.nome}</div>
                   <div className="det">
