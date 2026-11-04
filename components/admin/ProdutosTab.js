@@ -266,6 +266,17 @@ export default function ProdutosTab({ dados, exec, senha, mostrar }) {
         <div className="vazio">
           <div className="serif">{dados.produtos.length === 0 ? 'Nenhuma peça cadastrada' : 'Nada por aqui'}</div>
           <p>{dados.produtos.length === 0 ? 'Toque em “Nova peça” para começar o catálogo.' : 'Mude o filtro ou a busca.'}</p>
+          {dados.produtos.length === 0 ? (
+            <button
+              className="btn suave pequeno"
+              onClick={async () => {
+                const r = await exec('exemplos.adicionar', {});
+                if (r) mostrar(`${r.adicionados} peças de exemplo adicionadas.`);
+              }}
+            >
+              Adicionar 4 peças de exemplo
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className="lista">

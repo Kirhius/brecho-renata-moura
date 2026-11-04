@@ -331,6 +331,7 @@ export default function Vitrine() {
         codigo: pedido.codigo,
         itens: pedido.itens,
         total: pedido.total,
+        origem: window.location.origin,
       });
       gravarLS(CHAVE_ULTIMO, {
         codigo: pedido.codigo,

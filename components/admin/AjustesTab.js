@@ -6,9 +6,23 @@ import { MODO_DEMO } from '@/lib/client';
 import { restaurarDemo } from '@/lib/adapter-local';
 import { linkWhatsapp } from '@/lib/whatsapp';
 
-export default function AjustesTab({ dados, exec, recarregar }) {
+export default function AjustesTab({ dados, exec, recarregar, mostrar }) {
   const [f, setF] = useState(dados.config);
   const [salvando, setSalvando] = useState(false);
+  const [addExemplos, setAddExemplos] = useState(false);
+
+  async function adicionarExemplos() {
+    setAddExemplos(true);
+    const r = await exec('exemplos.adicionar', {});
+    setAddExemplos(false);
+    if (r) {
+      mostrar(
+        r.adicionados > 0
+          ? `${r.adicionados} peças de exemplo adicionadas. Veja em Peças.`
+          : 'As peças de exemplo já estão no catálogo.'
+      );
+    }
+  }
 
   useEffect(() => setF(dados.config), [dados.config]);
 
@@ -63,6 +77,16 @@ export default function AjustesTab({ dados, exec, recarregar }) {
           </a>
         ) : null}
       </div>
+
+      <div className="sep" />
+
+      <div className="aviso">
+        <b>Peças de exemplo:</b> adiciona 4 peças fictícias (com fotos de mentira) para você testar o catálogo, a
+        sacola e o painel. Dá para editar ou excluir cada uma em Peças, como qualquer outra.
+      </div>
+      <button className="btn suave pequeno" onClick={adicionarExemplos} disabled={addExemplos}>
+        {addExemplos ? 'Adicionando...' : 'Adicionar 4 peças de exemplo'}
+      </button>
 
       <div className="sep" />
 
