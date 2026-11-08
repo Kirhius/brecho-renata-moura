@@ -415,7 +415,7 @@ export default function Vitrine() {
           <Logo className="logo" />
           <span className="marca-texto">
             <span className="marca-nome">{config.nome_loja || 'Renata Moura'}</span>
-            <span className="marca-sub">Brechó chique</span>
+            <span className="marca-sub">Achadinhos e Desapegos</span>
           </span>
         </button>
         <button className="btn-icone" onClick={() => setSacolaAberta(true)} aria-label={`Sacola com ${sacola.length} peças`}>
