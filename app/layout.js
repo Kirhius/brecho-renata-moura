@@ -9,7 +9,7 @@ import './globals.css';
 import PwaRegister from '@/components/PwaRegister';
 
 export const metadata = {
-  title: 'Renata Moura | Brechó Chique',
+  title: 'Renata Moura | Achadinhos e Desapegos',
   description: 'Catálogo de peças femininas de grife. Reserve suas favoritas e finalize pelo WhatsApp.',
   applicationName: 'Renata Moura',
   appleWebApp: { capable: true, title: 'Renata Moura', statusBarStyle: 'default' },

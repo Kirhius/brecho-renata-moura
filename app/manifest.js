@@ -1,6 +1,6 @@
 export default function manifest() {
   return {
-    name: 'Renata Moura | Brechó Chique',
+    name: 'Renata Moura | Achadinhos e Desapegos',
     short_name: 'Renata Moura',
     description: 'Catálogo de peças femininas. Reserve e finalize pelo WhatsApp.',
     start_url: '/',

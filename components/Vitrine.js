@@ -523,7 +523,7 @@ export default function Vitrine() {
         <div className="serif" style={{ fontSize: 22, color: 'var(--wine)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
           {config.nome_loja || 'Renata Moura'}
         </div>
-        <p>Brechó de grife · peças únicas, selecionadas e revisadas.</p>
+        <p>Achadinhos e Desapegos · peças únicas, selecionadas e revisadas.</p>
         {config.instagram ? (
           <a className="insta" href={`https://instagram.com/${config.instagram}`} target="_blank" rel="noopener noreferrer">
             <IconInstagram size={18} /> @{config.instagram}
